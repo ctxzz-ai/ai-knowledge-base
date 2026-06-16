@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import argparse
 import os
+import sys
 import yaml
 import re
 
@@ -13,8 +14,8 @@ def parse_markdown_file(filepath):
     if match:
         try:
             return yaml.safe_load(match.group(1)), match.group(2)
-        except yaml.YAMLError:
-            pass
+        except yaml.YAMLError as e:
+            print(f"Error parsing YAML in {filepath}: {e}", file=sys.stderr)
     return None, content
 
 def search_entries(keyword=None, tag=None):
