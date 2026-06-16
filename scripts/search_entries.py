@@ -4,7 +4,7 @@ import os
 import yaml
 import re
 
-from constants import DATA_DIR
+DATA_DIR = "data"
 
 def parse_markdown_file(filepath):
     with open(filepath, 'r', encoding='utf-8') as f:

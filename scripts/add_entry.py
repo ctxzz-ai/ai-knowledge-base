@@ -1,10 +1,14 @@
 #!/usr/bin/env python3
 import argparse
 import os
+import sys
 import datetime
 import re
 
-from constants import DATA_DIR
+# Determine the repository root based on the script's location
+SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
+REPO_ROOT = os.path.dirname(SCRIPT_DIR)
+DATA_DIR = os.path.join(REPO_ROOT, "data")
 
 def sanitize_filename(title):
     filename = re.sub(r'[^a-z0-9]+', '-', title.lower()).strip('-')
@@ -32,10 +36,20 @@ def main():
 
     if not os.path.exists(DATA_DIR):
         os.makedirs(DATA_DIR)
-    if not os.path.exists(args.content_file):
-        return
 
-    with open(args.content_file, 'r', encoding='utf-8') as f:
+    # Security Fix: Prevent Path Traversal
+    content_file_path = os.path.realpath(args.content_file)
+
+    # Check if the resolved path is within the repository root
+    if os.path.commonpath([REPO_ROOT, content_file_path]) != REPO_ROOT:
+        print(f"Error: Access denied. Path '{args.content_file}' is outside the allowed directory.", file=sys.stderr)
+        sys.exit(1)
+
+    if not os.path.exists(content_file_path):
+        print(f"Error: Content file '{args.content_file}' does not exist.", file=sys.stderr)
+        sys.exit(1)
+
+    with open(content_file_path, 'r', encoding='utf-8') as f:
         content = f.read()
 
     filename = sanitize_filename(args.title)
