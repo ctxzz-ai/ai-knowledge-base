@@ -37,7 +37,13 @@ def search_entries(keyword=None, tag=None):
             match = True
 
         if match:
-            results.append({'filepath': filepath, 'title': metadata.get('title', 'Untitled'), 'date': metadata.get('date', ''), 'tags': metadata.get('tags', [])})
+            entry = {
+                'filepath': filepath,
+                'title': metadata.get('title', 'Untitled'),
+                'date': metadata.get('date', ''),
+                'tags': metadata.get('tags', [])
+            }
+            results.append(entry)
     return results
 
 def main():
