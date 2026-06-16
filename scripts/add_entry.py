@@ -4,7 +4,7 @@ import os
 import datetime
 import re
 
-DATA_DIR = "data"
+from constants import DATA_DIR
 
 def sanitize_filename(title):
     filename = re.sub(r'[^a-z0-9]+', '-', title.lower()).strip('-')
