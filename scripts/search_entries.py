@@ -5,7 +5,9 @@ import sys
 import yaml
 import re
 
-DATA_DIR = "data"
+# Add the directory containing this script to sys.path so we can import constants
+sys.path.append(os.path.dirname(os.path.realpath(__file__)))
+from constants import DATA_DIR
 
 def parse_markdown_file(filepath):
     with open(filepath, 'r', encoding='utf-8') as f:
