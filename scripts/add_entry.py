@@ -35,8 +35,7 @@ def main():
     parser.add_argument("--tags", nargs='*', default=[], help="List of tags.")
     args = parser.parse_args()
 
-    if not os.path.exists(DATA_DIR):
-        os.makedirs(DATA_DIR)
+    os.makedirs(DATA_DIR, exist_ok=True)
 
     try:
         content_file_path = os.path.realpath(args.content_file)
