@@ -9,10 +9,12 @@ import re
 sys.path.append(os.path.dirname(os.path.realpath(__file__)))
 from constants import DATA_DIR
 
+FRONTMATTER_REGEX = re.compile(r"^---\n(.*?)\n---\n(.*)", re.DOTALL)
+
 def parse_markdown_file(filepath):
     with open(filepath, 'r', encoding='utf-8') as f:
         content = f.read()
-    match = re.match(r"^---\n(.*?)\n---\n(.*)", content, re.DOTALL)
+    match = FRONTMATTER_REGEX.match(content)
     if match:
         try:
             return yaml.safe_load(match.group(1)), match.group(2)
