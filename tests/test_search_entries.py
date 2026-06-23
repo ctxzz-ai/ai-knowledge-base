@@ -94,5 +94,35 @@ class TestSearchEntries(unittest.TestCase):
         self.assertEqual(results[0]['title'], 'Valid')
         self.assertIn("Error parsing YAML in", stderr_output)
 
+    def test_search_entries_ignore_non_markdown(self):
+        temp_dir = tempfile.mkdtemp()
+
+        valid_content = "---\ntitle: Valid MD\ntags:\n  - test\n---\nbody"
+        txt_content = "This is a text file, not markdown."
+        json_content = '{"title": "JSON file"}'
+
+        valid_filepath = os.path.join(temp_dir, "valid.md")
+        txt_filepath = os.path.join(temp_dir, "document.txt")
+        json_filepath = os.path.join(temp_dir, "data.json")
+        no_ext_filepath = os.path.join(temp_dir, "file_with_no_extension")
+
+        with open(valid_filepath, 'w', encoding='utf-8') as f:
+            f.write(valid_content)
+        with open(txt_filepath, 'w', encoding='utf-8') as f:
+            f.write(txt_content)
+        with open(json_filepath, 'w', encoding='utf-8') as f:
+            f.write(json_content)
+        with open(no_ext_filepath, 'w', encoding='utf-8') as f:
+            f.write("No extension file")
+
+        with patch('scripts.search_entries.DATA_DIR', temp_dir):
+            results = search_entries()
+
+        shutil.rmtree(temp_dir)
+
+        self.assertEqual(len(results), 1)
+        self.assertEqual(results[0]['title'], 'Valid MD')
+        self.assertTrue(results[0]['filepath'].endswith('valid.md'))
+
 if __name__ == '__main__':
     unittest.main()
