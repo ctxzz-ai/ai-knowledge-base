@@ -4,21 +4,46 @@ import os
 import sys
 import yaml
 import re
+import json
+import datetime
 
-# Add the directory containing this script to sys.path so we can import constants
-sys.path.append(os.path.dirname(os.path.realpath(__file__)))
-from constants import DATA_DIR
+DATA_DIR = "data"
+CACHE_FILE = os.path.join(DATA_DIR, ".search_cache.json")
+
+FRONTMATTER_REGEX = re.compile(r"^---\n(.*?)\n---\n(.*)", re.DOTALL)
 
 def parse_markdown_file(filepath):
     with open(filepath, 'r', encoding='utf-8') as f:
         content = f.read()
-    match = re.match(r"^---\n(.*?)\n---\n(.*)", content, re.DOTALL)
+    match = FRONTMATTER_REGEX.match(content)
     if match:
         try:
             return yaml.safe_load(match.group(1)), match.group(2)
         except yaml.YAMLError as e:
             print(f"Error parsing YAML in {filepath}: {e}", file=sys.stderr)
     return None, content
+
+def load_cache():
+    if os.path.exists(CACHE_FILE):
+        try:
+            with open(CACHE_FILE, 'r', encoding='utf-8') as f:
+                return json.load(f)
+        except (json.JSONDecodeError, IOError):
+            pass
+    return {}
+
+def json_serial(obj):
+    """JSON serializer for objects not serializable by default json code"""
+    if isinstance(obj, (datetime.datetime, datetime.date)):
+        return obj.isoformat()
+    raise TypeError(f"Type {type(obj)} not serializable")
+
+def save_cache(cache):
+    try:
+        with open(CACHE_FILE, 'w', encoding='utf-8') as f:
+            json.dump(cache, f, ensure_ascii=False, default=json_serial)
+    except IOError as e:
+        print(f"Warning: Could not save cache: {e}", file=sys.stderr)
 
 def search_entries(keyword=None, tag=None):
     results = []
@@ -30,7 +55,24 @@ def search_entries(keyword=None, tag=None):
     for filename in os.listdir(DATA_DIR):
         if not filename.endswith(".md"): continue
         filepath = os.path.join(DATA_DIR, filename)
-        metadata, body = parse_markdown_file(filepath)
+
+        try:
+            mtime = os.path.getmtime(filepath)
+        except OSError:
+            continue
+
+        if filename in cache and cache[filename].get('mtime') == mtime:
+            metadata = cache[filename]['metadata']
+            body = cache[filename]['body']
+        else:
+            metadata, body = parse_markdown_file(filepath)
+            if metadata:
+                cache[filename] = {'mtime': mtime, 'metadata': metadata, 'body': body}
+                cache_updated = True
+            elif filename in cache:
+                del cache[filename]
+                cache_updated = True
+
         if not metadata: continue
 
         match = False
@@ -44,6 +86,10 @@ def search_entries(keyword=None, tag=None):
 
         if match:
             results.append({'filepath': filepath, 'title': metadata.get('title', 'Untitled'), 'date': metadata.get('date', ''), 'tags': metadata.get('tags', [])})
+
+    if cache_updated:
+        save_cache(cache)
+
     return results
 
 def main():
