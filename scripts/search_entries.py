@@ -23,6 +23,10 @@ def parse_markdown_file(filepath):
 def search_entries(keyword=None, tag=None):
     results = []
     if not os.path.exists(DATA_DIR): return results
+
+    # Hoist keyword.lower() outside the loop
+    kw = keyword.lower() if keyword else None
+
     for filename in os.listdir(DATA_DIR):
         if not filename.endswith(".md"): continue
         filepath = os.path.join(DATA_DIR, filename)
@@ -32,8 +36,7 @@ def search_entries(keyword=None, tag=None):
         match = False
         if tag and tag in metadata.get('tags', []):
             match = True
-        elif keyword:
-            kw = keyword.lower()
+        elif kw:
             if kw in metadata.get('title', '').lower() or kw in metadata.get('query', '').lower() or kw in body.lower():
                 match = True
         else:
