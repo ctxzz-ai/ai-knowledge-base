@@ -10,10 +10,12 @@ import datetime
 DATA_DIR = "data"
 CACHE_FILE = os.path.join(DATA_DIR, ".search_cache.json")
 
+FRONTMATTER_REGEX = re.compile(r"^---\n(.*?)\n---\n(.*)", re.DOTALL)
+
 def parse_markdown_file(filepath):
     with open(filepath, 'r', encoding='utf-8') as f:
         content = f.read()
-    match = re.match(r"^---\n(.*?)\n---\n(.*)", content, re.DOTALL)
+    match = FRONTMATTER_REGEX.match(content)
     if match:
         try:
             return yaml.safe_load(match.group(1)), match.group(2)
