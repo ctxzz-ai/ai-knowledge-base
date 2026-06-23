@@ -1,28 +1,46 @@
-import timeit
-import re
-import yaml
+import time
 import os
+import shutil
+import tempfile
+import sys
 
-# Create dummy markdown file
-with open('dummy.md', 'w') as f:
-    f.write("---\ntitle: test\ntags: [a, b]\n---\nHello world\n")
+sys.path.append(os.path.join(os.path.dirname(__file__), 'scripts'))
+import constants
+import search_entries
 
-def parse_markdown_file_original():
-    with open('dummy.md', 'r', encoding='utf-8') as f:
-        content = f.read()
-    match = re.match(r"^---\n(.*?)\n---\n(.*)", content, re.DOTALL)
+def create_dummy_data(data_dir, num_files):
+    os.makedirs(data_dir, exist_ok=True)
+    for i in range(num_files):
+        with open(os.path.join(data_dir, f"dummy_{i}.md"), "w") as f:
+            f.write("---\n")
+            f.write(f"title: Dummy File {i}\n")
+            f.write(f"tags: [dummy, test]\n")
+            f.write(f"query: Query {i}\n")
+            f.write("---\n")
+            f.write(f"This is the body of dummy file {i}.\n")
+            f.write(f"It has some text that we might search for.\n")
+            f.write(f"Keyword might be found here or there.\n")
 
-FRONTMATTER_REGEX = re.compile(r"^---\n(.*?)\n---\n(.*)", re.DOTALL)
+def run_benchmark():
+    temp_dir = tempfile.mkdtemp()
+    try:
+        # Patch DATA_DIR in search_entries module
+        search_entries.DATA_DIR = temp_dir
 
-def parse_markdown_file_optimized():
-    with open('dummy.md', 'r', encoding='utf-8') as f:
-        content = f.read()
-    match = FRONTMATTER_REGEX.match(content)
+        print(f"Creating 5000 dummy files in {temp_dir}...")
+        create_dummy_data(temp_dir, 5000)
 
-original_time = timeit.timeit("parse_markdown_file_original()", globals=globals(), number=10000)
-optimized_time = timeit.timeit("parse_markdown_file_optimized()", globals=globals(), number=10000)
+        print("Running search baseline...")
+        start = time.time()
+        for _ in range(5): # run 5 times
+            search_entries.search_entries(keyword="KeYwOrD")
+        end = time.time()
 
-print(f"Original: {original_time:.4f}s")
-print(f"Optimized: {optimized_time:.4f}s")
+        print(f"Total time for 5 searches: {end - start:.4f} seconds")
+        print(f"Average time per search: {(end - start)/5:.4f} seconds")
 
-os.remove('dummy.md')
+    finally:
+        shutil.rmtree(temp_dir)
+
+if __name__ == '__main__':
+    run_benchmark()

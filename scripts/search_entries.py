@@ -49,17 +49,11 @@ def search_entries(keyword=None, tag=None):
     results = []
     if not os.path.exists(DATA_DIR): return results
 
-    cache = load_cache()
-    cache_updated = False
+    # Hoist keyword.lower() outside the loop
+    kw = keyword.lower() if keyword else None
 
-    # Evict deleted files from cache
-    current_files = {f for f in os.listdir(DATA_DIR) if f.endswith(".md")}
-    for cached_filename in list(cache.keys()):
-        if cached_filename not in current_files:
-            del cache[cached_filename]
-            cache_updated = True
-
-    for filename in current_files:
+    for filename in os.listdir(DATA_DIR):
+        if not filename.endswith(".md"): continue
         filepath = os.path.join(DATA_DIR, filename)
 
         try:
@@ -84,8 +78,7 @@ def search_entries(keyword=None, tag=None):
         match = False
         if tag and tag in metadata.get('tags', []):
             match = True
-        elif keyword:
-            kw = keyword.lower()
+        elif kw:
             if kw in metadata.get('title', '').lower() or kw in metadata.get('query', '').lower() or kw in body.lower():
                 match = True
         else:
