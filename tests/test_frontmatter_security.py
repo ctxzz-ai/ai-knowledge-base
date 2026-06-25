@@ -4,7 +4,6 @@ import sys
 import yaml
 import tempfile
 import subprocess
-from unittest.mock import patch
 
 # Adjust the path to import scripts.add_entry
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
