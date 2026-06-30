@@ -8,9 +8,9 @@ import sys
 TEST_DIR = os.path.dirname(os.path.realpath(__file__))
 REPO_ROOT = os.path.dirname(TEST_DIR)
 ADD_ENTRY_SCRIPT = os.path.join(REPO_ROOT, "scripts", "add_entry.py")
-DATA_DIR = os.path.join(REPO_ROOT, "data")
 
 sys.path.insert(0, REPO_ROOT)
+from scripts.constants import DATA_DIR
 from scripts.add_entry import sanitize_filename
 
 class TestSanitizeFilename(unittest.TestCase):
