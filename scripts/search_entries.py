@@ -49,6 +49,9 @@ def search_entries(keyword=None, tag=None):
     results = []
     if not os.path.exists(DATA_DIR): return results
 
+    cache = load_cache()
+    cache_updated = False
+
     # Hoist keyword.lower() outside the loop
     kw = keyword.lower() if keyword else None
 
