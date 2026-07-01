@@ -79,16 +79,22 @@ def search_entries(keyword=None, tag=None):
         if not metadata: continue
 
         match = False
-        if tag and tag in metadata.get('tags', []):
-            match = True
+        tags = metadata.get('tags') or []
+        title = metadata.get('title') or ''
+        query = metadata.get('query') or ''
+        date = metadata.get('date') or ''
+
+        if tag:
+            if tag in tags:
+                match = True
         elif kw:
-            if kw in metadata.get('title', '').lower() or kw in metadata.get('query', '').lower() or kw in body.lower():
+            if kw in title.lower() or kw in query.lower() or kw in body.lower():
                 match = True
         else:
             match = True
 
         if match:
-            results.append({'filepath': filepath, 'title': metadata.get('title', 'Untitled'), 'date': metadata.get('date', ''), 'tags': metadata.get('tags', [])})
+            results.append({'filepath': filepath, 'title': title if title else 'Untitled', 'date': date, 'tags': tags})
 
     if cache_updated:
         save_cache(cache)

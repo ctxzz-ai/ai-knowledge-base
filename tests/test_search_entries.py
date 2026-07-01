@@ -124,5 +124,34 @@ class TestSearchEntries(unittest.TestCase):
         self.assertEqual(results[0]['title'], 'Valid MD')
         self.assertTrue(results[0]['filepath'].endswith('valid.md'))
 
+    def test_search_entries_empty_yaml_fields(self):
+        temp_dir = tempfile.mkdtemp()
+
+        empty_fields_content = "---\ntitle:\ntags:\nquery:\ndate:\n---\nbody content here"
+        empty_filepath = os.path.join(temp_dir, "empty_fields.md")
+
+        with open(empty_filepath, 'w', encoding='utf-8') as f:
+            f.write(empty_fields_content)
+
+        with patch('scripts.search_entries.DATA_DIR', temp_dir):
+            # Test tag search
+            results_tag = search_entries(tag="any")
+            self.assertEqual(len(results_tag), 0)
+
+            # Test keyword search
+            results_kw = search_entries(keyword="body")
+            self.assertEqual(len(results_kw), 1)
+            self.assertEqual(results_kw[0]['title'], 'Untitled')
+            self.assertEqual(results_kw[0]['tags'], [])
+            self.assertEqual(results_kw[0]['date'], '')
+
+            # Test missing keyword but match all
+            results_all = search_entries()
+            self.assertEqual(len(results_all), 1)
+            self.assertEqual(results_all[0]['title'], 'Untitled')
+            self.assertEqual(results_all[0]['tags'], [])
+
+        shutil.rmtree(temp_dir)
+
 if __name__ == '__main__':
     unittest.main()
