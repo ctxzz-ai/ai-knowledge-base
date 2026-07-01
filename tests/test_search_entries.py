@@ -79,7 +79,8 @@ class TestSearchEntries(unittest.TestCase):
         with open(invalid_filepath, 'w', encoding='utf-8') as f:
             f.write(invalid_content)
 
-        with patch('scripts.search_entries.DATA_DIR', temp_dir):
+        temp_cache = os.path.join(temp_dir, ".search_cache.json")
+        with patch('scripts.search_entries.DATA_DIR', temp_dir), patch('scripts.search_entries.CACHE_FILE', temp_cache):
             old_stderr = sys.stderr
             sys.stderr = StringIO()
             try:
@@ -115,7 +116,8 @@ class TestSearchEntries(unittest.TestCase):
         with open(no_ext_filepath, 'w', encoding='utf-8') as f:
             f.write("No extension file")
 
-        with patch('scripts.search_entries.DATA_DIR', temp_dir):
+        temp_cache = os.path.join(temp_dir, ".search_cache.json")
+        with patch('scripts.search_entries.DATA_DIR', temp_dir), patch('scripts.search_entries.CACHE_FILE', temp_cache):
             results = search_entries()
 
         shutil.rmtree(temp_dir)
