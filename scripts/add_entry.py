@@ -7,8 +7,11 @@ import re
 import yaml
 
 # Determine repo root dynamically relative to this script
-REPO_ROOT = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-DATA_DIR = os.path.join(REPO_ROOT, "data")
+SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
+if SCRIPT_DIR not in sys.path:
+    sys.path.append(SCRIPT_DIR)
+
+from constants import REPO_ROOT, DATA_DIR
 
 def sanitize_filename(title):
     filename = re.sub(r'[^a-z0-9]+', '-', title.lower()).strip('-')

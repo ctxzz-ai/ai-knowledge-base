@@ -7,7 +7,12 @@ import re
 import json
 import datetime
 
-DATA_DIR = "data"
+SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
+if SCRIPT_DIR not in sys.path:
+    sys.path.append(SCRIPT_DIR)
+
+from constants import DATA_DIR
+
 CACHE_FILE = os.path.join(DATA_DIR, ".search_cache.json")
 
 FRONTMATTER_REGEX = re.compile(r"^---\n(.*?)\n---\n(.*)", re.DOTALL)
