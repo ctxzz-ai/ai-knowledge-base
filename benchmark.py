@@ -5,7 +5,6 @@ import tempfile
 import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), 'scripts'))
-import constants
 import search_entries
 
 def create_dummy_data(data_dir, num_files):
